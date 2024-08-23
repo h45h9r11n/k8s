@@ -1,0 +1,79 @@
+└─$ kubectl create ns prod             
+namespace/prod created                                                                                                                                                                                          
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/network-policy]
+└─$ kubectl run api-pod -n prod -l app=backend --image=gcr.io/google-samples/hello-app:1.0 --port 8080 --expose
+service/api-pod created
+pod/api-pod created
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/network-policy]
+└─$ kubectl get all -n prod                                                                                    
+NAME          READY   STATUS    RESTARTS   AGE
+pod/api-pod   1/1     Running   0          17s
+
+NAME              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+service/api-pod   ClusterIP   10.102.211.212   <none>        8080/TCP   17s                                                                                                                                                                                        
+
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/network-policy]
+└─$ kubectl run -l app=api -n prod --image=alpine --restart=Never --rm -it temporary-pod
+
+If you don't see a command prompt, try pressing enter.
+/ # 
+/ # hostname
+temporary-pod
+
+/ # wget -qO- http://api-pod:8080
+Hello, world!
+Version: 1.0.0
+Hostname: api-pod
+                                                                                                                                                                                             
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/network-policy]
+└─$ kubectl get networkpolicy -A             
+NAMESPACE   NAME               POD-SELECTOR   AGE
+default     allow-dns-access   <none>         29s
+default     allow-egress       app=webapp     38s
+default     allow-ingress      app=api        33s
+default     default-deny       <none>         49s
+prod        default-deny       <none>         19s
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/network-policy]
+└─$ kubectl run -n prod --image=alpine --restart=Never --rm -it temporary-pod           
+If you don't see a command prompt, try pressing enter.
+/ # wget -qO- http://api-pod:8080
+wget: bad address 'api-pod:8080'
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/network-policy]
+└─$ kubectl create -f allow-egress-default-prod.yaml 
+networkpolicy.networking.k8s.io/allow-egress-default-prod created
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/network-policy]
+└─$ kubectl label namespace prod name=prod              
+namespace/prod labeled
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/network-policy]
+└─$ kubectl label namespace default name=default
+namespace/default labeled
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/network-policy]
+└─$ kubectl create -f allow-ingress-default-prod.yaml 
+networkpolicy.networking.k8s.io/allow-ingress-default-prod created
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/network-policy]
+└─$ kubectl get networkpolicy -A                     
+NAMESPACE   NAME                         POD-SELECTOR   AGE
+default     allow-dns-access             <none>         9m12s
+default     allow-egress                 app=webapp     9m21s
+default     allow-egress-default-prod    app=webapp     3m25s
+default     allow-ingress                app=api        9m16s
+default     default-deny                 <none>         9m32s
+prod        allow-ingress-default-prod   app=backend    10s
+prod        default-deny                 <none>         9m2s
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/network-policy]
+└─$ kubectl exec -it webapp-587fbd6467-l8mq5  -- bash 
+root@webapp-587fbd6467-l8mq5:/var/www/html# curl http://api-pod.prod:8080
+Hello, world!
+Version: 1.0.0
+Hostname: api-pod
