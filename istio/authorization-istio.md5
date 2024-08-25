@@ -1,0 +1,106 @@
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create -f allow-db.yaml                               
+authorizationpolicy.security.istio.io/allow-db created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ ls
+allow-db.yaml  allow-nothing.yaml
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create ns staging      
+namespace/staging created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec web-pod -n staging -- curl db-pod.istio-demo
+Error from server (NotFound): pods "web-pod" not found
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl -n staging -l app=frontend run web-pod --image=nginx --expose --port 80
+service/web-pod created
+pod/web-pod created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec web-pod -n staging -- curl db-pod.istio-demo                      
+error: Internal error occurred: unable to upgrade connection: container not found ("web-pod")
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec web-pod -n staging -- curl db-pod.istio-demo
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   615  100   615    0     0    122      0  0:00:05  0:00:05 --:--:--   126
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+html { color-scheme: light dark; }
+body { width: 35em; margin: 0 auto;
+font-family: Tahoma, Verdana, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<h1>Welcome to nginx!</h1>
+<p>If you see this page, the nginx web server is successfully installed and
+working. Further configuration is required.</p>
+
+<p>For online documentation and support please refer to
+<a href="http://nginx.org/">nginx.org</a>.<br/>
+Commercial support is available at
+<a href="http://nginx.com/">nginx.com</a>.</p>
+
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ ls
+allow-db.yaml  allow-nothing.yaml
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ ls
+allow-db.yaml  allow-nothing.yaml
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ cat allow-db.yaml 
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: "allow-db"
+  namespace: istio-demo
+spec:
+  selector:
+    matchLabels:
+      app: db
+  action: ALLOW
+  rules:
+  - to:
+    - operation:
+        methods: ["GET"]
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ nano allow-db.yaml
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl replace -f allow-db.yaml --force
+authorizationpolicy.security.istio.io "allow-db" deleted
+authorizationpolicy.security.istio.io/allow-db replaced
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec web-pod -n staging -- curl db-pod.istio-demo
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100    19  100    19    0     0   1763      0 --:--:-- --:--:-- --:--:--  1900RBAC: access denied
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl get authorizationpolicy                          
+No resources found in default namespace.
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl get authorizationpolicy -n staging
+No resources found in staging namespace.
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl get authorizationpolicy -n istio-demo
+NAME            ACTION   AGE
+allow-db        ALLOW    17m
+allow-nothing            21h

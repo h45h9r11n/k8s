@@ -1,0 +1,18 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: "allow-db"
+  namespace: istio-demo
+spec:
+  selector:
+    matchLabels:
+      app: db
+  action: ALLOW
+  rules:
+  - to:
+    - operation:
+        methods: ["GET"]
+    from:
+    - source:
+        principals: ["cluster.local/ns/prod/sa/default"]
+
