@@ -1,0 +1,17 @@
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: ksp-ubuntu-cap-net-raw-block
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      os: ubuntu-net-raw
+  capabilities:
+    matchCapabilities:
+    - capability: net_raw
+      fromSource:
+      - path: /bin/ping
+  action:
+    Block
+  severity: 1

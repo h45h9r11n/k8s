@@ -1,0 +1,88 @@
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl create -f resource-quote-memory.yaml
+resourcequota/resource-quota-memory created
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl describe quote resource-quota-memory             
+error: the server doesn't have a resource type "quote"
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl describe quota resource-quota-memory
+Error from server (NotFound): resourcequotas "resource-quota-memory" not found
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl describe quota resource-quota-memory -n resource-quota-demo
+Name:          resource-quota-memory
+Namespace:     resource-quota-demo
+Resource       Used  Hard
+--------       ----  ----
+limits.memory  0     400Mi
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ nano pod-memory-limit.yaml     
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl create -f pod-memory-limit.yaml                           
+error: error parsing pod-memory-limit.yaml: error converting YAML to JSON: yaml: line 9: mapping values are not allowed in this context
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ nano pod-memory-limit.yaml                            
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl create -f pod-memory-limit.yaml 
+error: error parsing pod-memory-limit.yaml: error converting YAML to JSON: yaml: line 9: mapping values are not allowed in this context
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ nano pod-memory-limit.yaml                                         
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ nano pod-memory-limit.yaml
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ nano pod-memory-limit.yaml
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ nano pod-memory-limit.yaml             
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl create -f pod-memory-limit.yaml
+Error from server (NotFound): error when creating "pod-memory-limit.yaml": namespaces "resource-quote-demo" not found
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ nano pod-memory-limit.yaml             
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl create -f pod-memory-limit.yaml
+Error from server (Forbidden): error when creating "pod-memory-limit.yaml": pods "nginx" is forbidden: failed quota: resource-quota-memory: must specify limits.memory for: nginx-demo
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ nano pod-memory-limit.yaml             
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl create -f pod-memory-limit.yaml
+pod/nginx created
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl describe quota resource-quota-memory                       
+Error from server (NotFound): resourcequotas "resource-quota-memory" not found
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl describe quota resource-quota-memory -n resource-quota-demo
+Name:          resource-quota-memory
+Namespace:     resource-quota-demo
+Resource       Used   Hard
+--------       ----   ----
+limits.memory  300Mi  400Mi
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ nano pod-memory-limit-2.yaml                          
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ cp pod-memory-limit.yaml pod-memory-limit-2.yaml                          
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ nano pod-memory-limit-2.yaml
+                                                                                                                                                                                             
+┌──(h2h㉿master-node)-[~/repos/k8s/admission-controller/resource-quota]
+└─$ kubectl create -f pod-memory-limit-2.yaml                          
+Error from server (Forbidden): error when creating "pod-memory-limit-2.yaml": pods "nginx" is forbidden: exceeded quota: resource-quota-memory, requested: limits.memory=200Mi, used: limits.memory=300Mi, limited: limits.memory=400Mi

@@ -1,0 +1,176 @@
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create ns east
+namespace/east created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl label namespace east istio-injection=enabled --overwite
+error: unknown flag: --overwite
+See 'kubectl label --help' for usage.
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl label namespace east istio-injection=enabled --overwrite
+namespace/east labeled
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create -n east -f https://raw.githubusercontent.com/istio/istio/release-1.16/samples/httpbin/httpbin.yaml
+serviceaccount/httpbin created
+service/httpbin created
+deployment.apps/httpbin created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl get pods -n east                                                                                         
+NAME                       READY   STATUS    RESTARTS   AGE
+httpbin-666669c58f-ztknd   2/2     Running   0          98s
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create ns west                                                                                           
+namespace/west created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl label namespace west istio-injection=enabled --overwrite
+namespace/west labeled
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create -n west -f https://raw.githubusercontent.com/istio/istio/release-1.16/samples/httpbin/httpbin.yaml
+serviceaccount/httpbin created
+service/httpbin created
+deployment.apps/httpbin created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create -n west -f https://raw.githubusercontent.com/istio/istio/release-1.16/samples/sleep/sleep.yaml
+serviceaccount/sleep created
+service/sleep created
+deployment.apps/sleep created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl get pods -n west                                                                                     
+NAME                       READY   STATUS    RESTARTS   AGE
+httpbin-666669c58f-74mhn   2/2     Running   0          39s
+sleep-5fcd8fd6c8-6rhxd     2/2     Running   0          26s
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create ns legacy                                                                                     
+namespace/legacy created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl get pods -n legacy
+No resources found in legacy namespace.
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create -n legacy -f https://raw.githubusercontent.com/istio/istio/release-1.16/samples/sleep/sleep.yaml
+serviceaccount/sleep created
+service/sleep created
+deployment.apps/sleep created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl get pods -n legacy                                                                                     
+NAME                     READY   STATUS    RESTARTS   AGE
+sleep-5fcd8fd6c8-ldnkg   1/1     Running   0          3s
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create -n west -f https://raw.githubusercontent.com/istio/istio/release-1.16/samples/sleep/sleep.yaml
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec "$(kubectl get pod -l app=sleep -n east -o jsonpath={.items..metadata.name})" -n east -- curl http://httpbin.west:8000/ip -s -o /dev/null -w "%{http_code}\n"            
+
+error: pod, type/name or --filename must be specified
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec sleep-5fcd8fd6c8-6rhxd -n east -- curl http://httpbin.west:8000/ip -s -o /dev/null -w "%{http_code}\n"
+ 
+Error from server (NotFound): pods "sleep-5fcd8fd6c8-6rhxd" not found
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create -n east -f https://raw.githubusercontent.com/istio/istio/release-1.16/samples/sleep/sleep.yaml
+serviceaccount/sleep created
+service/sleep created
+deployment.apps/sleep created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl get pods                                                                                                   
+NAME                      READY   STATUS    RESTARTS   AGE
+api-5b76f69fc5-2tmpk      1/1     Running   0          2d11h
+api-5b76f69fc5-p8l42      1/1     Running   0          2d11h
+webapp-587fbd6467-l8mq5   1/1     Running   0          2d11h
+webapp-587fbd6467-ws2qk   1/1     Running   0          2d11h
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl get pods -n east  
+NAME                       READY   STATUS    RESTARTS   AGE
+httpbin-666669c58f-ztknd   2/2     Running   0          9m24s
+sleep-5fcd8fd6c8-n9hcn     2/2     Running   0          13s
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec sleep-5fcd8fd6c8-n9hcn -n east -- curl http://httpbin.west:8000/ip -s -o /dev/null -w "%{http_code}\n"
+
+200
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec sleep-5fcd8fd6c8-6rhxd -n west -- curl http://httpbin.east:8000/ip -s -o /dev/null -w "%{http_code}\n"
+
+200
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec sleep-5fcd8fd6c8-ldnkg -n legacy -- curl http://httpbin.east:8000/ip -s -o /dev/null -w "%{http_code}\n"
+
+200
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ nano strict-peer-authentication.yaml
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl create -f strict-peer-authentication.yaml                                                                    
+peerauthentication.security.istio.io/default created
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec sleep-5fcd8fd6c8-ldnkg -n legacy -- curl http://httpbin.east:8000/ip -s -o /dev/null -w "%{http_code}\n"
+000
+command terminated with exit code 56
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec sleep-5fcd8fd6c8-6rhxd -n west -- curl http://httpbin.east:8000/ip -s -o /dev/null -w "%{http_code}\n"  
+
+200
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ cp strict-peer-authentication.yaml strict-peer-authentication-httpbin.yaml                          
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ nano strict-peer-authentication-httpbin.yaml 
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec sleep-5fcd8fd6c8-6rhxd -n west -- curl http://httpbin.east:8000/ip -s                                 
+{
+  "origin": "127.0.0.6"
+}
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec sleep-5fcd8fd6c8-6rhxd -n west -- curl http://httpbin.east:8000/header -s 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<title>404 Not Found</title>
+<h1>Not Found</h1>
+<p>The requested URL was not found on the server.  If you entered the URL manually please check your spelling and try again.</p>
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec sleep-5fcd8fd6c8-6rhxd -n west -- curl http://httpbin.east:8000/headers -s 
+{
+  "headers": {
+    "Accept": "*/*", 
+    "Host": "httpbin.east:8000", 
+    "User-Agent": "curl/8.9.1", 
+    "X-Envoy-Attempt-Count": "1", 
+    "X-Forwarded-Client-Cert": "By=spiffe://cluster.local/ns/east/sa/httpbin;Hash=ed036cd5d32a5513c94d9e4715aed88fcaa489603b5c8117708d69e32b64903c;Subject=\"\";URI=spiffe://cluster.local/ns/west/sa/sleep"
+  }
+}
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl exec sleep-5fcd8fd6c8-ldnkg -n legacy -- curl http://httpbin.east:8000/headers -s 
+command terminated with exit code 56
+                                                                                                                                                                      
+┌──(h2h㉿master-node)-[~/repos/k8s/istio]
+└─$ kubectl delete peerauthentication -n istio-system default    
+kubectl delete ns east west legacy
+peerauthentication.security.istio.io "default" deleted
+namespace "east" deleted
+namespace "west" deleted
+namespace "legacy" deleted

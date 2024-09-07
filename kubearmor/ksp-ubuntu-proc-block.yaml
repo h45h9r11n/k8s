@@ -1,0 +1,21 @@
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: ksp-ubuntu-proc-block
+  namespace: default
+spec:
+  message: "block /usr/bin/sleep"
+  selector:
+    matchLabels:
+      os: ubuntu
+  #network:
+  #  matchProtocols:
+  #  - protocol: icmp
+  capabilities:
+    matchCapabilities:
+    - capability: net_raw
+  process:
+    matchPaths:
+    - path: /usr/bin/sleep
+  action:
+    Block

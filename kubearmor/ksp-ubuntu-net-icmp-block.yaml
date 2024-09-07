@@ -1,0 +1,17 @@
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: ksp-ubuntu-net-icmp-block
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      os: ubuntu-util
+  network:
+    matchProtocols:
+    - protocol: icmp
+      fromSource:
+      - path: /bin/ping
+  action:
+    Block
+  severity: 1

