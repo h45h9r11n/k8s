@@ -1,0 +1,20 @@
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: require-labels
+  namespace: prod
+spec:
+  validationFailureAction: Enforce
+  rules:
+  - name: check-for-labels
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+    validate:
+      message: "label 'tier' is required"
+      pattern:
+        metadata:
+          labels:
+            tier: "?*"

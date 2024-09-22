@@ -1,0 +1,20 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: tier-type-labeling
+spec:
+  rules:
+    - name: assign-tier-type
+      match:
+        any:
+        - resources:
+            kinds:
+            - Pod
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            labels:
+              tier: backend
+            spec:
+              (containers):
+              - (image): "*nginx* | *httpd*"

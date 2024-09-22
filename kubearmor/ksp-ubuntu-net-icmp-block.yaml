@@ -10,8 +10,6 @@ spec:
   network:
     matchProtocols:
     - protocol: icmp
-      fromSource:
-      - path: /bin/ping
   action:
     Block
   severity: 1
